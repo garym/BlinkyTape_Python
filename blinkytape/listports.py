@@ -11,6 +11,7 @@
   over serial communication is impossible.
 """
 
+from __future__ import print_function
 from serial.tools import list_ports
 import re
 import platform
@@ -45,4 +46,4 @@ def listPorts():
 
 if __name__ == "__main__":
 
-    print listPorts()
+    print(listPorts())

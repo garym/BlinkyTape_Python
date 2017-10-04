@@ -12,7 +12,7 @@
 """
 
 import serial
-import listports
+from .listports import listPorts
 
 class BlinkyTape(object):
     def __init__(self, port=None, ledCount=60, buffered=True):
@@ -40,29 +40,22 @@ class BlinkyTape(object):
 
         # If a port was not specified, try to find one and connect automatically
         if port == None:
-            ports = listports.listPorts()
+            ports = listPorts()
             if len(ports) == 0:
                 raise IOError("BlinkyTape not found!")
-        
-            port = listports.listPorts()[0]
+
+            port = listPorts()[0]
 
         self.port = port                # Path of the serial port to connect to
         self.ledCount = ledCount        # Number of LEDs on the BlinkyTape
         self.buffered = buffered        # If true, buffer output data before sending
-        self.buf = ""                   # Color data to send
+        self.buf = b""                   # Color data to send
         self.serial = serial.Serial(port, 115200)
 
         self.show()  # Flush any incomplete data
 
     def send_list(self, colors):
-        if len(colors) > self.ledCount:
-            raise RuntimeError("Attempting to set pixel outside range!")
-        for r, g, b in colors:
-            self.sendPixel(r, g, b)
-        self.show()
-
-    def send_list(self, colors):
-        data = ""
+        data = b""
         for r, g, b in colors:
             if r >= 255:
                 r = 254
@@ -70,7 +63,7 @@ class BlinkyTape(object):
                 g = 254
             if b >= 255:
                 b = 254
-            data += chr(r) + chr(g) + chr(b)
+            data += bytearray((r, g, b))
         self.serial.write(data)
         self.show()
 
@@ -81,7 +74,6 @@ class BlinkyTape(object):
 
         Throws a RuntimeException if [ledCount] pixels are already set.
         """
-        data = ""
         if r < 0:
             r = 0
         if g < 0:
@@ -94,7 +86,7 @@ class BlinkyTape(object):
             g = 254
         if b >= 255:
             b = 254
-        data = chr(r) + chr(g) + chr(b)
+        data = bytearray((r, g, b))
         if len(data)*3 < self.ledCount:
             if self.buffered:
                 self.buf += data
@@ -110,10 +102,10 @@ class BlinkyTape(object):
         Resets the pixel buffer, flushes the serial buffer,
         and discards any accumulated responses from BlinkyTape.
         """
-        control = chr(0) + chr(0) + chr(255)
+        control = bytearray((0, 0, 255))
         if self.buffered:
             self.serial.write(self.buf + control)
-            self.buf = ""
+            self.buf = b""
         else:
             self.serial.write(control)
         self.serial.flush()

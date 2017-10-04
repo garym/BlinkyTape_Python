@@ -5,6 +5,7 @@
 # export http_proxy=http://127.0.0.1:3213
 # before running this script
 
+from __future__ import print_function
 import time
 import urllib
 import json
@@ -33,7 +34,7 @@ def connect():
 
 
 def get_hourly_data():
-    print "[%d] Fetching %s" % (time.time(), url)
+    print("[%d] Fetching %s" % (time.time(), url))
 
     try:
         page_data = urllib.urlopen(url)
@@ -44,7 +45,7 @@ def get_hourly_data():
         return data
 
     except Exception as ex:
-        print ex
+        print(ex)
 
 
 color_map = {
@@ -95,10 +96,10 @@ if __name__ == "__main__":
         sys.exit(
             "Could not fetch weather data. Check your proxy settings and try again. Try: export http_proxy=PROXY_IP:PROXY_PORT before running this script.")
 
-    print data
+    print(data)
     for hour in data['hourly_forecast']:
         temp = int(hour['temp']['english'])
         r, g, b = color_for_temp(temp)
-        print "Temp: {}. Color: {},{},{}".format(temp, r, g, b)
+        print("Temp: {}. Color: {},{},{}".format(temp, r, g, b))
         blinky.sendPixel(r, g, b)
     blinky.show()
